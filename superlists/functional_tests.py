@@ -42,9 +42,7 @@ class NewVisitorTest(unittest.TestCase):
 
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
-        self.assertTrue(
-            any(rows.text == '1: 개발공부하기' for row in rows),
-        )
+
 
         # 추가 아이템을 입력할 수 있는 여분 텍스트 상자가 보여야 한다.
         # 사용자는 아이템을 또 추가한다.
