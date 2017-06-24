@@ -20,7 +20,7 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.get('http://localhost:8000')
 
         # unittest의 내장함수 사용
-        self.assertIn('To-do', self.browser.title)
+        # self.assertIn('To-do', self.browser.title)
         # 강제 테스트 실패를 발생시켜 에러메세지를 출력한다.
         # 일반적으로 테스트가 끝난 것을 알기 위해 넣는다.
         self.fail('Finish the test!')
