@@ -21,7 +21,6 @@ class NewVisitorTest(unittest.TestCase):
         self.browser.get('http://localhost:8000')
 
         # unittest의 내장함수 사용
-        # self.assertIn('To-do', self.browser.title)
         # 웹페이지 타이틀과 헤더가 'To-Do'를 표시하고 있다
         self.assertIn('To-Do', self.browser.title)
         header_text = self.browser.find_element_by_tag_name('h1').text
@@ -40,15 +39,23 @@ class NewVisitorTest(unittest.TestCase):
         # enter키를 치면 페이지 갱신과 동시에 작업목록에 아이템이 추가된다.
         inputbox.send_keys(Keys.ENTER)
 
+        # 추가 아이템을 입력할 수 있는 여분 텍스트 상자가 보여야 한다.
+        # 사용자는 아이템을 또 추가한다.
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('숙제도 하기')
+        inputbox.send_keys(Keys.ENTER)
+
         # 기능테스트 디버깅 - 실행시간 늘이기
         # import time
         # time.sleep(5)
+        # 페이지가 갱신되고 2개의 아이템이 목록에 보인다.
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
-
-
-        # 추가 아이템을 입력할 수 있는 여분 텍스트 상자가 보여야 한다.
-        # 사용자는 아이템을 또 추가한다.
+        self.assertIn('1: 개발공부하기', [row.text for row in rows])
+        self.assertIn(
+            '2: 숙제도 하기',
+            [row.text for row in rows]
+        )
 
         # 강제 테스트 실패를 발생시켜 에러메세지를 출력한다.
         # 일반적으로 테스트가 끝난 것을 알기 위해 넣는다.

@@ -6,9 +6,11 @@
     <h1>Your To-Do Lists</h1>
     <form action="" method="POST">
       {% csrf_token %}
-      <input id="id_new_item" placeholder="작업 아이템 입력" />
+      <input id="id_new_item" name="item_text" placeholder="작업 아이템 입력" />
     </form>
     <table id="id_list_table">
+        {# 편법 사용 #}
+        <tr><td>1: {{ new_item_text }}</td></tr>
     </table>
   </body>
 </html>

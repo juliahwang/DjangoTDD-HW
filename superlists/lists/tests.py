@@ -26,9 +26,17 @@ class HomePageTest(TestCase):
     def test_home_page_returns_correct_html(self):
         # HttpRequest 객체를 생성해 어떤 요청을 브라우저에 보내는지 확인
         request = HttpRequest()
+        request.method = 'POST'
+        request.POST['item_text'] = '신규 작업 아이템'
         # home_page 뷰에 전달해서 HttpResponse 객체로 응답을 받는다.
         response = home_page(request)
-        expected_html = render_to_string('lists/home.html')
+        self.assertIn('신규 작업 아이템', response.content.decode())
+        expected_html = render_to_string(
+            'lists/home.html',
+            {
+                'new_item_text': '신규 작업 아이템',
+            }
+        )
         # decode()를 사용해 expected_html의 byte 데이터를 파이썬 유니코드 문자열로 변환.
         self.assertEqual(
             re.sub(self.pattern_input_csrf, '', response.content.decode()),
