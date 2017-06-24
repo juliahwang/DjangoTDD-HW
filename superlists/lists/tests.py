@@ -1,3 +1,5 @@
+import re
+
 from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from django.template.loader import render_to_string
@@ -13,6 +15,9 @@ from .views import home_page
 
 
 class HomePageTest(TestCase):
+    # csrf_token 에 의해 생성된 input요소값이 달라지므로 정규식으로 삭제해준다.
+    pattern_input_csrf = re.compile(r'<input[^>]*csrfmiddlewaretoken[^>]*>')
+
     def test_root_url_resolves_to_home_page_view(self):
         # resolve('/') : 장고의 내부함수로 url을 해석해서 일치하는 뷰함수를 찾는다.
         found = resolve('/')
@@ -25,8 +30,10 @@ class HomePageTest(TestCase):
         response = home_page(request)
         expected_html = render_to_string('lists/home.html')
         # decode()를 사용해 expected_html의 byte 데이터를 파이썬 유니코드 문자열로 변환.
-        self.assertEqual(response.content.decode(), expected_html)
-
+        self.assertEqual(
+            re.sub(self.pattern_input_csrf, '', response.content.decode()),
+            re.sub(self.pattern_input_csrf, '', expected_html)
+        )
 
         ######### 상수/문자열은 테스트 범위가 아니므로 위처럼 변경 ############
         # # byte형 데이터인 <html></html>로 구성되어 있는지 확인

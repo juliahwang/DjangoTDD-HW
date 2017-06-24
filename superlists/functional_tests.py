@@ -40,6 +40,9 @@ class NewVisitorTest(unittest.TestCase):
         # enter키를 치면 페이지 갱신과 동시에 작업목록에 아이템이 추가된다.
         inputbox.send_keys(Keys.ENTER)
 
+        # 기능테스트 디버깅 - 실행시간 늘이기
+        # import time
+        # time.sleep(5)
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
 
