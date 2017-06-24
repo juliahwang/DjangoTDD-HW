@@ -23,6 +23,11 @@ class HomePageTest(TestCase):
         found = resolve('/')
         self.assertEqual(found.func, home_page)
 
+    def test_home_page_only_saves_items_when_necessary(self):
+        request = HttpRequest()
+        home_page(request)
+        self.assertEqual(Item.objects.count(), 0)
+
     def test_home_page_can_save_a_POST_request(self):
         request = HttpRequest()
         request.method = "POST"
@@ -35,58 +40,31 @@ class HomePageTest(TestCase):
         # 아이템 텍스트가 같은지 확인
         self.assertEqual(new_item.text, '신규 작업 아이템')
 
+    def test_home_page_redirects_after_POST(self):
+        request = HttpRequest()
+        request.method = "POST"
+        request.POST['item_text'] = '신규 작업 아이템'
+
+        response = home_page(request)
+
         # 응답이 html 에 의해 렌더링되지 않고 redirect되므로 이를 확인하는 코드로 수정.
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['location'], '/')
 
-        # self.assertIn('A new list item', response.content.decode())
-        # expected_html = render_to_string(
-        #     'lists/home.html',
-        #     {
-        #         'new_item_text': 'A new list item',
-        #     }
-        # )
-        # self.assertEqual(
-        #     re.sub(self.pattern_input_csrf, '', response.content.decode()),
-        #     re.sub(self.pattern_input_csrf, '', expected_html)
-        # )
+    def test_home_page_displays_all_list_items(self):
+        Item.objects.create(text='itemey 1')
+        Item.objects.create(text='itemey 2')
 
-
-    # def test_home_page_returns_correct_html(self):
-    #     # HttpRequest 객체를 생성해 어떤 요청을 브라우저에 보내는지 확인
-    #     request = HttpRequest()
-    #     request.method = 'POST'
-    #     request.POST['item_text'] = '신규 작업 아이템'
-    #     # home_page 뷰에 전달해서 HttpResponse 객체로 응답을 받는다.
-    #     response = home_page(request)
-    #     self.assertIn('신규 작업 아이템', response.content.decode())
-    #     expected_html = render_to_string(
-    #         'lists/home.html',
-    #         {
-    #             'new_item_text': '신규 작업 아이템',
-    #         }
-    #     )
-    #     # decode()를 사용해 expected_html의 byte 데이터를 파이썬 유니코드 문자열로 변환.
-    #     self.assertEqual(
-    #         re.sub(self.pattern_input_csrf, '', response.content.decode()),
-    #         re.sub(self.pattern_input_csrf, '', expected_html)
-    #     )
-
-        ######### 상수/문자열은 테스트 범위가 아니므로 위처럼 변경 ############
-        # # byte형 데이터인 <html></html>로 구성되어 있는지 확인
-        # self.assertTrue(response.content.startswith(b'<html>'))
-        # # title에 특정 단어가 있는지 확인
-        # self.assertIn(b'<title>To-Do Lists</title>', response.content)
-        # self.assertTrue(response.content.endswith(b'</html>'))
-
-    def test_home_page_only_saves_items_when_necessary(self):
         request = HttpRequest()
-        home_page(request)
-        self.assertEqual(Item.objects.count(), 0)
+        response = home_page(request)
+
+        self.assertIn('itemey 1', response.content.decode())
+        self.assertIn('itemey 2', response.content.decode())
 
 
 class ItemModelTest(TestCase):
     pattern_input_csrf = re.compile(r'<input[^>]*csrfmiddlewaretoken[^>]*>')
+
     def test_saving_and_retrieving_items(self):
         first_item = Item()
         first_item.text = 'The first (ever) list item'
