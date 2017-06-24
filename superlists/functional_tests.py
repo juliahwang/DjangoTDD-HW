@@ -1,12 +1,9 @@
 import unittest
-
+from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 
 
 # unittest 모듈의 TestCase 상속
-from selenium.webdriver.common.keys import Keys
-
-
 class NewVisitorTest(unittest.TestCase):
     # 테스트 시작시 실행 - 크롬브라우저를 열고 3초 대기한 후 테스트 코드 실행
     def setUp(self):
