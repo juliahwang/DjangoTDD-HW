@@ -15,6 +15,12 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
+    # 동일코드의 반복을 줄이기 위해 메서드로 정의.
+    def check_for_row_in_list_table(self, row_text):
+        table = self.browser.find_element_by_id('id_list_table')
+        rows = table.find_elements_by_tag_name('tr')
+        self.assertIn(row_text, [row.text for row in rows])
+
     # 테스트 메인코드
     def test_can_start_a_list_and_retrieve_it_later(self):
         # 사용자는 앱을 켠다
@@ -38,12 +44,17 @@ class NewVisitorTest(unittest.TestCase):
 
         # enter키를 치면 페이지 갱신과 동시에 작업목록에 아이템이 추가된다.
         inputbox.send_keys(Keys.ENTER)
+        self.check_for_row_in_list_table('1: 개발공부하기')
 
         # 추가 아이템을 입력할 수 있는 여분 텍스트 상자가 보여야 한다.
         # 사용자는 아이템을 또 추가한다.
         inputbox = self.browser.find_element_by_id('id_new_item')
         inputbox.send_keys('숙제도 하기')
         inputbox.send_keys(Keys.ENTER)
+
+        # 페이지가 업데이트되고 난 후에 추가한 아이템 2개가 여전히 있는지 확인
+        self.check_for_row_in_list_table('1: 개발공부하기')
+        self.check_for_row_in_list_table('2: 숙제도 하기')
 
         # 기능테스트 디버깅 - 실행시간 늘이기
         # import time
