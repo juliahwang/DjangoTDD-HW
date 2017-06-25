@@ -50,19 +50,9 @@ class HomePageTest(TestCase):
 
         # 응답이 html 에 의해 렌더링되지 않고 redirect되므로 이를 확인하는 코드로 수정.
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/')
+        self.assertEqual(response['location'], '/lists/only_one_list_in_the_world/')
 
-    # 템플릿이 여러 아이템을 출력할 수 있는지 확인하는 테스트
-    def test_home_page_displays_all_list_items(self):
-        Item.objects.create(text='itemey 1')
-        Item.objects.create(text='itemey 2')
-
-        request = HttpRequest()
-        response = home_page(request)
-
-        self.assertIn('itemey 1', response.content.decode())
-        self.assertIn('itemey 2', response.content.decode())
-
+    # test_home_page_displays_list_items(self) 함수는 겹치므로 삭제
 
 class ItemModelTest(TestCase):
     pattern_input_csrf = re.compile(r'<input[^>]*csrfmiddlewaretoken[^>]*>')
@@ -83,4 +73,19 @@ class ItemModelTest(TestCase):
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, 'The first (ever) list item')
         self.assertEqual(second_saved_item.text, 'Item the second')
+
+
+class ListViewTest(TestCase):
+    # 템플릿이 여러 아이템을 출력할 수 있는지 확인하는 테스트
+    def test_displays_all_list_items(self):
+        Item.objects.create(text='itemey 1')
+        Item.objects.create(text='itemey 2')
+
+        # 장고의 TestCase 속성을 사용(self.client)
+        # 여기에 테스트할 URL을 .get한다.
+        response = self.client.get('/lists/only_one_list_in_the_world/')
+
+        # 응답내용 처리를 자동으로 해주는 장고의 assertContains 메서드 사용
+        self.assertContains(response, 'itemey 1')
+        self.assertContains(response, 'itemey 2')
 

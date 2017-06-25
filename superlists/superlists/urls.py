@@ -20,4 +20,5 @@ from lists import views
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', views.home_page, name='home'),
+    url(r'^lists/only_one_list_in_the_world/$', views.view_list, name='view_list'),
 ]
