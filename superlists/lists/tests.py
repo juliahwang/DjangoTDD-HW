@@ -76,6 +76,10 @@ class ItemModelTest(TestCase):
 
 
 class ListViewTest(TestCase):
+    def test_uses_list_template(self):
+        response = self.client.get('/lists/only_one_list_in_the_world')
+        self.assertTemplateUsed(response, 'lists/list.html')
+
     # 템플릿이 여러 아이템을 출력할 수 있는지 확인하는 테스트
     def test_displays_all_list_items(self):
         Item.objects.create(text='itemey 1')
