@@ -1,10 +1,12 @@
 import unittest
+
+from django.test import LiveServerTestCase
 from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 
 
 # unittest 모듈의 TestCase 상속
-class NewVisitorTest(unittest.TestCase):
+class NewVisitorTest(LiveServerTestCase):
     # 테스트 시작시 실행 - 크롬브라우저를 열고 3초 대기한 후 테스트 코드 실행
     def setUp(self):
         self.browser = webdriver.Chrome()
@@ -15,7 +17,8 @@ class NewVisitorTest(unittest.TestCase):
     def tearDown(self):
         self.browser.quit()
 
-    # 동일코드의 반복을 줄이기 위해 메서드로 정의.
+    # 동일코드의 반복을 줄이기 위해 헬퍼 메서드로 정의
+    # - 'test_'로 시작하지 않으면 테스트 실행시 자동으로 실행되지 않는다!!
     def check_for_row_in_list_table(self, row_text):
         table = self.browser.find_element_by_id('id_list_table')
         rows = table.find_elements_by_tag_name('tr')
@@ -23,8 +26,8 @@ class NewVisitorTest(unittest.TestCase):
 
     # 테스트 메인코드
     def test_can_start_a_list_and_retrieve_it_later(self):
-        # 사용자는 앱을 켠다
-        self.browser.get('http://localhost:8000')
+        # 사용자는 앱을 켠다 - LiveServerTestCase의 속성 사용
+        self.browser.get(self.live_server_url)
 
         # unittest의 내장함수 사용
         # 웹페이지 타이틀과 헤더가 'To-Do'를 표시하고 있다
@@ -73,6 +76,7 @@ class NewVisitorTest(unittest.TestCase):
         self.fail('Finish the test!')
 
 
-if __name__ == '__main__':
-    # 테스트 작성시 발생하는 불필요한 리소스 경고를 제거
-    unittest.main(warnings='ignore')
+### 장고 테스트 실행자를 사용하기 때문에 더이상 필요 없음
+# if __name__ == '__main__':
+#     # 테스트 작성시 발생하는 불필요한 리소스 경고를 제거
+#     unittest.main(warnings='ignore')

@@ -23,11 +23,6 @@ class HomePageTest(TestCase):
         found = resolve('/')
         self.assertEqual(found.func, home_page)
 
-    def test_home_page_only_saves_items_when_necessary(self):
-        request = HttpRequest()
-        home_page(request)
-        self.assertEqual(Item.objects.count(), 0)
-
     def test_home_page_can_save_a_POST_request(self):
         request = HttpRequest()
         request.method = "POST"
@@ -40,6 +35,12 @@ class HomePageTest(TestCase):
         # 아이템 텍스트가 같은지 확인
         self.assertEqual(new_item.text, '신규 작업 아이템')
 
+    # 아이템저장이 원활한지 윗 테스트를 분할해 새로운 테스트 메서드로 리펙터링
+    def test_home_page_only_saves_items_when_necessary(self):
+        request = HttpRequest()
+        home_page(request)
+        self.assertEqual(Item.objects.count(), 0)
+
     def test_home_page_redirects_after_POST(self):
         request = HttpRequest()
         request.method = "POST"
@@ -51,6 +52,7 @@ class HomePageTest(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response['location'], '/')
 
+    # 템플릿이 여러 아이템을 출력할 수 있는지 확인하는 테스트
     def test_home_page_displays_all_list_items(self):
         Item.objects.create(text='itemey 1')
         Item.objects.create(text='itemey 2')
