@@ -2,8 +2,8 @@ import re
 
 from django.core.urlresolvers import resolve
 from django.http import HttpRequest
-from django.template.loader import render_to_string
 from django.test import TestCase
+
 from .models import Item
 from .views import home_page
 
@@ -23,36 +23,17 @@ class HomePageTest(TestCase):
         found = resolve('/')
         self.assertEqual(found.func, home_page)
 
-    def test_home_page_can_save_a_POST_request(self):
-        request = HttpRequest()
-        request.method = "POST"
-        request.POST['item_text'] = '신규 작업 아이템'
-
-        response = home_page(request)
-        # 새 아이템이 데이터베이스에 저장되었는지 확인
-        self.assertEqual(Item.objects.count(), 1)
-        new_item = Item.objects.first()
-        # 아이템 텍스트가 같은지 확인
-        self.assertEqual(new_item.text, '신규 작업 아이템')
-
     # 아이템저장이 원활한지 윗 테스트를 분할해 새로운 테스트 메서드로 리펙터링
     def test_home_page_only_saves_items_when_necessary(self):
         request = HttpRequest()
         home_page(request)
         self.assertEqual(Item.objects.count(), 0)
 
-    def test_home_page_redirects_after_POST(self):
-        request = HttpRequest()
-        request.method = "POST"
-        request.POST['item_text'] = '신규 작업 아이템'
+        # test_home_page_can_save_a_POST_request(self),
+        # test_home_page_redirects_after_POST(self) 이동해 새 클래스로 정의
 
-        response = home_page(request)
+        # test_home_page_displays_list_items(self) 함수는 겹치므로 삭제
 
-        # 응답이 html 에 의해 렌더링되지 않고 redirect되므로 이를 확인하는 코드로 수정.
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response['location'], '/lists/only_one_list_in_the_world/')
-
-    # test_home_page_displays_list_items(self) 함수는 겹치므로 삭제
 
 class ItemModelTest(TestCase):
     pattern_input_csrf = re.compile(r'<input[^>]*csrfmiddlewaretoken[^>]*>')
@@ -77,7 +58,7 @@ class ItemModelTest(TestCase):
 
 class ListViewTest(TestCase):
     def test_uses_list_template(self):
-        response = self.client.get('/lists/only_one_list_in_the_world')
+        response = self.client.get('/lists/only_one_list_in_the_world/')
         self.assertTemplateUsed(response, 'lists/list.html')
 
     # 템플릿이 여러 아이템을 출력할 수 있는지 확인하는 테스트
@@ -93,3 +74,27 @@ class ListViewTest(TestCase):
         self.assertContains(response, 'itemey 1')
         self.assertContains(response, 'itemey 2')
 
+
+class NewListTest(TestCase):
+    def test_saving_a_POST_request(self):
+        self.client.post(
+            '/lists/new',
+            data={
+                'item_text': '신규 작업 아이템',
+            }
+        )
+        # 새 아이템이 데이터베이스에 저장되었는지 확인
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        # 아이템 텍스트가 같은지 확인
+        self.assertEqual(new_item.text, '신규 작업 아이템')
+
+    def test_redirects_after_POST(self):
+        response = self.client.post(
+            '/lists/new',
+            data={
+                'item_text': '신규 작업 아이템',
+            }
+        )
+        # 응답이 html 에 의해 렌더링되지 않고 redirect되므로 이를 확인하는 코드로 수정.
+        self.assertRedirects(response, '/lists/only_one_list_in_the_world/')
