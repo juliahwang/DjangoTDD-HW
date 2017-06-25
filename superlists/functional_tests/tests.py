@@ -47,6 +47,9 @@ class NewVisitorTest(LiveServerTestCase):
 
         # enter키를 치면 페이지 갱신과 동시에 작업목록에 아이템이 추가된다.
         inputbox.send_keys(Keys.ENTER)
+        user1_list_url = self.browser.current_url
+        # unittest의 헬퍼메서드, 정규표현과 문자열이 일치하는지 확인해줌
+        self.assertRegex(user1_list_url, '/lists/.+')
         self.check_for_row_in_list_table('1: 개발공부하기')
 
         # 추가 아이템을 입력할 수 있는 여분 텍스트 상자가 보여야 한다.
@@ -59,21 +62,30 @@ class NewVisitorTest(LiveServerTestCase):
         self.check_for_row_in_list_table('1: 개발공부하기')
         self.check_for_row_in_list_table('2: 숙제도 하기')
 
-        # 기능테스트 디버깅 - 실행시간 늘이기
-        # import time
-        # time.sleep(5)
-        # 페이지가 갱신되고 2개의 아이템이 목록에 보인다.
-        table = self.browser.find_element_by_id('id_list_table')
-        rows = table.find_elements_by_tag_name('tr')
-        self.assertIn('1: 개발공부하기', [row.text for row in rows])
-        self.assertIn(
-            '2: 숙제도 하기',
-            [row.text for row in rows]
-        )
+        # + 코드 추가 - 사용자마다 url이 부여되는가?
+        self.browser.quit()
+        self.browser = webdriver.Chrome()
 
-        # 강제 테스트 실패를 발생시켜 에러메세지를 출력한다.
-        # 일반적으로 테스트가 끝난 것을 알기 위해 넣는다.
-        self.fail('Finish the test!')
+        # 사용자2가 홈페이지에 접속하면 사용자1의 리스트는 보이지 않는다
+        self.browser.get(self.live_server_url)
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('개발공부하기', page_text)
+        self.assertNotIn('숙제도 하기', page_text)
+
+        # 사용자2가 새로운 아이템을 입력한다.
+        inputbox = self.browser.find_element_by_id('id_new_item')
+        inputbox.send_keys('우유 사기')
+        inputbox.send_keys(Keys.ENTER)
+
+        # 사용자2가 자신만의 전용 URL을 획득한다.
+        user2_list_url = self.browser.current_url
+        self.assertRegex(user2_list_url, '/lists/.+')
+        self.assertNotEqual(user2_list_url, user1_list_url)
+
+        # 사용자1이 입력한 흔적이 없다는 것을 확인한다.
+        page_text = self.browser.find_element_by_tag_name('body').text
+        self.assertNotIn('개발공부하기', page_text)
+        self.assertIn('우유 사기', page_text)
 
 
 ### 장고 테스트 실행자를 사용하기 때문에 더이상 필요 없음
