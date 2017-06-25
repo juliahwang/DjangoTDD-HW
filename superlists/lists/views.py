@@ -6,10 +6,11 @@ from lists.models import Item
 
 
 def home_page(request):
-    # return HttpResponse('<html><title>To-Do Lists</title></html>')
-    if request.method == "POST":
-        Item.objects.create(text=request.POST['item_text'])
-        return redirect('/lists/only_one_list_in_the_world/')
+    # new_list 구현 후 필요없는 코드 삭제
+    # # return HttpResponse('<html><title>To-Do Lists</title></html>')
+    # if request.method == "POST":
+    #     Item.objects.create(text=request.POST['item_text'])
+    #     return redirect('/lists/only_one_list_in_the_world/')
     return render(request, 'lists/home.html')
 
 

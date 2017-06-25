@@ -24,15 +24,12 @@ class HomePageTest(TestCase):
         self.assertEqual(found.func, home_page)
 
     # 아이템저장이 원활한지 윗 테스트를 분할해 새로운 테스트 메서드로 리펙터링
-    def test_home_page_only_saves_items_when_necessary(self):
-        request = HttpRequest()
-        home_page(request)
-        self.assertEqual(Item.objects.count(), 0)
+    # test_home_page_only_saves_items_when_necessary(self) 삭제
 
-        # test_home_page_can_save_a_POST_request(self),
-        # test_home_page_redirects_after_POST(self) 이동해 새 클래스로 정의
+    # test_home_page_can_save_a_POST_request(self),
+    # test_home_page_redirects_after_POST(self) 이동해 새 클래스로 정의
 
-        # test_home_page_displays_list_items(self) 함수는 겹치므로 삭제
+    # test_home_page_displays_list_items(self) 함수는 겹치므로 삭제
 
 
 class ItemModelTest(TestCase):
