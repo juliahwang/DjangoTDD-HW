@@ -4,7 +4,7 @@ from django.core.urlresolvers import resolve
 from django.http import HttpRequest
 from django.test import TestCase
 
-from .models import Item
+from .models import Item, List
 from .views import home_page
 
 
@@ -32,17 +32,25 @@ class HomePageTest(TestCase):
     # test_home_page_displays_list_items(self) 함수는 겹치므로 삭제
 
 
-class ItemModelTest(TestCase):
+class ListAndItemModelsTest(TestCase):
     pattern_input_csrf = re.compile(r'<input[^>]*csrfmiddlewaretoken[^>]*>')
 
     def test_saving_and_retrieving_items(self):
+        list_ = List()
+        list_.save()
+
         first_item = Item()
         first_item.text = 'The first (ever) list item'
+        first_item.list = list_
         first_item.save()
 
         second_item = Item()
         second_item.text = 'Item the second'
+        second_item.list = list_
         second_item.save()
+
+        saved_list = List.objects.first()
+        self.assertEqual(saved_list, list_)
 
         saved_items = Item.objects.all()
         self.assertEqual(saved_items.count(), 2)
@@ -50,7 +58,9 @@ class ItemModelTest(TestCase):
         first_saved_item = saved_items[0]
         second_saved_item = saved_items[1]
         self.assertEqual(first_saved_item.text, 'The first (ever) list item')
+        self.assertEqual(first_saved_item.list, list_)
         self.assertEqual(second_saved_item.text, 'Item the second')
+        self.assertEqual(second_saved_item.list, list_)
 
 
 class ListViewTest(TestCase):
@@ -59,9 +69,10 @@ class ListViewTest(TestCase):
         self.assertTemplateUsed(response, 'lists/list.html')
 
     # 템플릿이 여러 아이템을 출력할 수 있는지 확인하는 테스트
-    def test_displays_all_list_items(self):
-        Item.objects.create(text='itemey 1')
-        Item.objects.create(text='itemey 2')
+    def test_displays_all_items(self):
+        list_ = List.objects.create()
+        Item.objects.create(text='itemey 1', list=list_)
+        Item.objects.create(text='itemey 2', list=list_)
 
         # 장고의 TestCase 속성을 사용(self.client)
         # 여기에 테스트할 URL을 .get한다.
