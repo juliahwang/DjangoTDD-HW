@@ -14,10 +14,10 @@ def home_page(request):
     return render(request, 'lists/home.html')
 
 
-def view_list(request):
-    items = Item.objects.all()
+def view_list(request, list_id):
+    list_ = List.objects.get(id=list_id)
     context = {
-        'items': items,
+        'list': list_,
     }
     return render(request, 'lists/list.html', context)
 
@@ -25,4 +25,10 @@ def view_list(request):
 def new_list(request):
     list_ = List.objects.create()
     Item.objects.create(text=request.POST['item_text'], list=list_)
-    return redirect('only_one_list_in_the_world/')
+    return redirect('/lists/{}/'.format(list_.id))
+
+
+def add_item(request, list_id):
+    list_ = List.objects.get(id=list_id)
+    Item.objects.create(text=request.POST['item_text'], list=list_)
+    return redirect('/lists/{}/'.format(list_.id))

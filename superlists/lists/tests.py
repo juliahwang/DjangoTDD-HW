@@ -65,22 +65,34 @@ class ListAndItemModelsTest(TestCase):
 
 class ListViewTest(TestCase):
     def test_uses_list_template(self):
-        response = self.client.get('/lists/only_one_list_in_the_world/')
+        list_ = List.objects.create()
+        response = self.client.get('/lists/{}/'.format(list_.id))
         self.assertTemplateUsed(response, 'lists/list.html')
 
     # 템플릿이 여러 아이템을 출력할 수 있는지 확인하는 테스트
-    def test_displays_all_items(self):
-        list_ = List.objects.create()
-        Item.objects.create(text='itemey 1', list=list_)
-        Item.objects.create(text='itemey 2', list=list_)
+    def test_displays_only_items_for_that_list(self):
+        correct_list = List.objects.create()
+        Item.objects.create(text='itemey 1', list=correct_list)
+        Item.objects.create(text='itemey 2', list=correct_list)
+        other_list = List.objects.create()
+        Item.objects.create(text='other list item 1', list=other_list)
+        Item.objects.create(text='other list item 2', list=other_list)
 
         # 장고의 TestCase 속성을 사용(self.client)
         # 여기에 테스트할 URL을 .get한다.
-        response = self.client.get('/lists/only_one_list_in_the_world/')
+        response = self.client.get('/lists/{}/'.format(correct_list.id))
 
         # 응답내용 처리를 자동으로 해주는 장고의 assertContains 메서드 사용
         self.assertContains(response, 'itemey 1')
         self.assertContains(response, 'itemey 2')
+        self.assertNotContains(response, 'other list item 1')
+        self.assertNotContains(response, 'other list item 2')
+
+    def test_passes_correct_list_to_template(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+        response = self.client.get('/list/{}/'.format(correct_list.id))
+        # self.assertEqual(response.context['list'], correct_list)
 
 
 class NewListTest(TestCase):
@@ -104,5 +116,36 @@ class NewListTest(TestCase):
                 'item_text': '신규 작업 아이템',
             }
         )
+        new_list = List.objects.first()
         # 응답이 html 에 의해 렌더링되지 않고 redirect되므로 이를 확인하는 코드로 수정.
-        self.assertRedirects(response, '/lists/only_one_list_in_the_world/')
+        self.assertRedirects(response, '/lists/{}/'.format(new_list.id))
+
+    # 기존 목록에 아이템을 추가하기 위한 또 다른 뷰
+    def test_can_save_a_POST_request_to_an_existing_list(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+        
+        self.client.post(
+            '/lists/{}/add_item'.format(correct_list.id),
+            data={
+                'item_text': '기존 목록에 신규 아이템',
+            }
+        )
+        
+        self.assertEqual(Item.objects.count(), 1)
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, '기존 목록에 신규 아이템')
+        self.assertEqual(new_item.list, correct_list)
+        
+    def test_redirects_to_list_view(self):
+        other_list = List.objects.create()
+        correct_list = List.objects.create()
+        
+        response = self.client.post(
+            '/lists/{}/add_item'.format(correct_list.id),
+            data={
+                'item_text': '기존 목록에 신규 아이템',
+            }
+        )
+        
+        self.assertRedirects(response, '/lists/{}/'.format(correct_list.id))
